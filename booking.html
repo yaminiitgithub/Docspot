@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Appointment - DocSpot</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+  <div class="container my-5">
+    <h2 class="text-center mb-4">Book an Appointment</h2>
+
+    <!-- Booking Form -->
+    <form id="bookingForm">
+      <div class="mb-3">
+        <label for="patientName" class="form-label">Your Name</label>
+        <input type="text" class="form-control" id="patientName" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="mobileNumber" class="form-label">phone number</label>
+        <input type="text" class="form-control" id="mobileNumber" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="doctor" class="form-label">Select Doctor</label>
+        <select class="form-control" id="doctor" required>
+          <option value="">-- Choose a Doctor --</option>
+          <option value="Dr. A Kumar">Dr. A Kumar</option>
+          <option value="Dr. B Sharma">Dr. B Sharma</option>
+          <option value="Dr. C Reddy">Dr. C Reddy</option>
+          <option value="Dr. D Singh">Dr. D Singh</option>
+          <option value="Dr. E Mehta">Dr. E Mehta</option>
+          <option value="Dr. Jhon">Dr. Jhon</option>
+          <option value="Dr. Vijaya">Dr. Vijaya</option>
+          <option value="Dr. Yamini">Dr. Yamini</option>
+          <option value="Dr. Chandrakala">Dr. Chandrakala</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="date" class="form-label">Select Date</label>
+        <input type="date" class="form-control" id="date" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Confirm Booking</button>
+    </form>
+
+    <!-- Appointments List -->
+    <div class="mt-5">
+      <h4>Your Appointments</h4>
+      <ul id="appointmentsList" class="list-group"></ul>
+    </div>
+  </div>
+
+  <script>
+    // Display stored appointments
+    function displayAppointments() {
+      let appointments = JSON.parse(localStorage.getItem("appointments")) || [];
+      let list = document.getElementById("appointmentsList");
+      list.innerHTML = "";
+
+      appointments.forEach((app, index) => {
+        let li = document.createElement("li");
+        li.className = "list-group-item d-flex justify-content-between align-items-center";
+
+        li.innerHTML = `
+          <div>
+            <strong>${app.name}</strong> (${app.mobile}) - ${app.doctor} on ${app.date}
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="cancelAppointment(${index})">Cancel</button>
+        `;
+
+        list.appendChild(li);
+      });
+    }
+
+    // Cancel appointment with confirmation
+    function cancelAppointment(index) {
+      if (confirm("Are you sure you want to cancel this appointment?")) {
+        let appointments = JSON.parse(localStorage.getItem("appointments")) || [];
+        appointments.splice(index, 1); // remove appointment
+        localStorage.setItem("appointments", JSON.stringify(appointments));
+        displayAppointments();
+        alert("Appointment cancelled successfully!");
+      }
+    }
+
+    // Booking form submit
+    document.getElementById("bookingForm").onsubmit = function(e) {
+      e.preventDefault();
+      let name = document.getElementById("patientName").value;
+      let mobile = document.getElementById("mobileNumber").value.trim();
+      let doctor = document.getElementById("doctor").value;
+      let date = document.getElementById("date").value;
+
+      // Validate mobile number (10 digits only)
+      let mobileRegex = /^[0-9]{10}$/;
+      if (!mobileRegex.test(mobile)) {
+        alert("Please enter a valid 10-digit mobile number.");
+        return;
+      }
+
+      // Add +91 prefix if not already present
+      if (!mobile.startsWith("+91")) {
+        mobile = "+91 " + mobile;
+      }
+
+      let appointments = JSON.parse(localStorage.getItem("appointments")) || [];
+      appointments.push({ name, mobile, doctor, date });
+      localStorage.setItem("appointments", JSON.stringify(appointments));
+
+      alert("Appointment booked successfully!");
+      displayAppointments();
+      document.getElementById("bookingForm").reset();
+    };
+
+    // Preselect doctor if chosen in doctors.html
+    window.onload = function() {
+      displayAppointments();
+      let selectedDoctor = localStorage.getItem("selectedDoctor");
+      if (selectedDoctor) {
+        document.getElementById("doctor").value = selectedDoctor;
+        localStorage.removeItem("selectedDoctor");
+      }
+    };
+  </script>
+</body>
+</html>
